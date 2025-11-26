@@ -1,16 +1,24 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import UseAuth from '../../../Hooks/UseAuth';
+import { Link, useLocation, useNavigate } from 'react-router';
+import SocialLogin from '../SocialLogin/SocialLogin';
 
 const Login = () => {
 
     const {register,  handleSubmit, formState:{errors}} = useForm();
     const {signInUser} = UseAuth();
+
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    // console.log('in the login page', location);
     const handleLogin = (data) =>{
         console.log('form data', data);
-        signInUser(data.email, data.user)
+        signInUser(data.email, data.password)
         .then(result =>{
             console.log(result.user);
+            navigate(location?.state || '/');
         })
         .catch(error =>{
          console.log(error);
@@ -18,7 +26,9 @@ const Login = () => {
 
     }
     return (
-        <div className="card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl">
+        <div className="card bg-base-100 w-full max-w-sm mx-auto shrink-0 shadow-2xl">
+          <h3 className='text-3xl text-center'>Welcome Back </h3>
+          <p className='text-center'>Please Login</p>
       <form className='card-body' onSubmit={ handleSubmit(handleLogin)}>
         <fieldset className="fieldset">
             {/*Email field */}
@@ -44,7 +54,11 @@ const Login = () => {
           <div><a className="link link-hover">Forgot password?</a></div>
           <button className="btn btn-neutral mt-4">Login</button>
         </fieldset>
+        <p>New to zapshift ? Please register now?
+         <Link state={location.state}
+          className='text-red-500' to="/register" >Register</Link></p>
       </form>
+      <SocialLogin></SocialLogin>
     </div>
     );
 };

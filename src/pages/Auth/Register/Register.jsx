@@ -1,26 +1,79 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import UseAuth from '../../../Hooks/UseAuth';
+import { Link, useLocation, useNavigate } from 'react-router';
+import SocialLogin from '../SocialLogin/SocialLogin';
+import axios from 'axios';
 
 const Register = () => {
 
     const {register, handleSubmit, formState: {errors}} = useForm();
-    const {registerUser} = UseAuth();
+    const {registerUser, updateUserProfile} = UseAuth();
+    
+
+    const location = useLocation();
+    const navigate = useNavigate();
+    console.log('in the register page', location);
+
     const handleRegisteration = (data) =>{
-       console.log('after register', data)
+       console.log('after register', data.photo[0]);
+       
+       const profileImg =  data.photo[0];
+
        registerUser(data.email, data.password)
        .then(result =>{
         console.log(result.user);
+        navigate(location.state);
+        //1.  store the image and get the photo url
+       const formData = new FormData();
+       formData.append('image', profileImg);
+       //2. send the photo to store nad get the url
+       const image_API_URL = `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_image_host_key}`
+       axios.post(image_API_URL, formData)
+       .then(res => {
+        console.log('after image upload', res.data.data.url)
+
+        // update user profile to firebase
+        const userProfile = {
+          displayName: data.name,
+          photoURL: res.data.data.url
+        }
+       updateUserProfile(userProfile )
+       .then(()=>{
+        console.log('user profile updated done')
+       })
+       .catch(error => console.log(error))
+
+       })
+
        })
        .catch(error =>{
         console.log(error);
        })
     }
     return (
-        <div>
+        <div  className="card bg-base-100 w-full max-w-sm mx-auto shrink-0 shadow-2xl">
         <form className='card-body' onSubmit={handleSubmit(handleRegisteration)}>
-
+          <h3 className='text-3xl text-center'>Welcome to Zapshift</h3>
+          <p className='text-center'>Please register</p>
           <fieldset className="fieldset">
+
+            {/*Name/*/}
+
+          <label className="label">Name</label>
+          <input type="text" {...register("name", { required: true})} className="input" placeholder="Name" />
+
+          {errors.name?.type==='required' && <p className='text-red-500'>Name is required</p>}
+
+          {/*Photo URL */}
+
+          
+          <label className="label">Photo</label>
+          <input type="file" {...register("photo", { required: true})} className="file-input" placeholder="Your Photo" />
+
+          {errors.name?.type==='required' && <p className='text-red-500'>Photo is required</p>}
+
+            {/*Email/*/}
           <label className="label">Email</label>
           <input type="email" {...register("email", { required: true})} className="input" placeholder="Email" />
 
@@ -46,7 +99,12 @@ const Register = () => {
           <div><a className="link link-hover">Forgot password?</a></div>
           <button className="btn btn-neutral mt-4">Register</button>
         </fieldset>
-            </form>
+          <p>Already have an account ? 
+          <Link state={location.state}
+          className='text-red-500' to="/login" >Login</Link></p>
+      
+          </form>
+          <SocialLogin></SocialLogin>
         </div>
     );
 };
