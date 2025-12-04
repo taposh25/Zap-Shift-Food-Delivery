@@ -9,6 +9,10 @@ const Coverage = () => {
     const mapRef = useRef(null);
     // console.log(serviceCenters);
 
+
+
+    // Search District
+
     const handleSearch = (e)=>{
         e.preventDefault();
          const location = e.target.location.value;
@@ -68,7 +72,8 @@ const Coverage = () => {
          {
             serviceCenters.map((center, index) =>  
                 
-             <Marker key={index} position={[center.latitude, center.longitude]}>
+             <Marker key={index} 
+             position={[center.latitude, center.longitude]}>
 
             <Popup>
                 <strong>{center.district}</strong> <br /> Service Area: {center.covered_area.join(', ')}.

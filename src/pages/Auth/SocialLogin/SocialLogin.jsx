@@ -1,10 +1,11 @@
 import React from 'react';
 import UseAuth from '../../../Hooks/UseAuth';
 import { useLocation, useNavigate } from 'react-router';
+import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 
 const SocialLogin = () => {
     const {signInGoogle} = UseAuth()
-
+    const axiosSecure = useAxiosSecure();
     const location =  useLocation();
     const navigate = useNavigate();
     // console.log('location in social',location)
@@ -14,6 +15,20 @@ const SocialLogin = () => {
        .then(result =>{
         console.log(result.user)
         navigate(location?.state || '/');
+
+         // create user in the database
+        const userInfo = {
+          email : result.user.email,
+          displayName : result.user.displayName,
+          photoURL: result.user.photoURL
+        }
+
+        axiosSecure.post('/users', userInfo)
+        .then(res =>{
+            console.log('users data has been stored', res.data);
+              navigate(location?.state || '/');
+        })
+
        })
        .catch(error =>{
         console.log(error)
